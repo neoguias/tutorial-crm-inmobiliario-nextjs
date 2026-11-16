@@ -41,7 +41,7 @@ export const visitSchema = z.object({
     .refine((date) => date > new Date(), 'La fecha de la visita tiene que ser posterior a ahora.'),
 })
 
-// Un campo de archivos sin nada elegido llega como un archivo vacío: lo quitamos antes de validar.
+// Un campo de archivos sin nada elegido llega como un archivo vacío, que quitamos antes de validar.
 export const photosSchema = z.preprocess(
   (files) => (files as unknown[]).filter((file) => file instanceof File && file.size > 0),
   z

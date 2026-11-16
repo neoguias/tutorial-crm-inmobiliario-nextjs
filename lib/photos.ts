@@ -1,8 +1,8 @@
 import { mkdir, rm, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-// Las fotos se guardan fuera de public: Next.js solo sirve los archivos que había en public
-// al compilar, así que una foto subida después daría un 404. Las sirve app/fotos.
+// Las fotos se guardan fuera de public, porque Next.js solo sirve los archivos que había en
+// public al compilar y una foto subida después daría un 404. Las sirve app/fotos.
 export const PHOTO_DIR = path.join(process.cwd(), 'storage', 'photos')
 
 export const PHOTO_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' } as const

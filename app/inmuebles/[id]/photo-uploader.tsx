@@ -23,7 +23,7 @@ export function PhotoUploader({ propertyId }: { propertyId: number }) {
   function preview(files: FileList | null) {
     previews.forEach((url) => URL.revokeObjectURL(url))
     setSelected(files?.length ?? 0)
-    // Solo las imágenes tienen vista previa: un PDF elegido por error no la tiene.
+    // Un PDF elegido por error no tiene vista previa, solo las imágenes.
     setPreviews([...(files ?? [])].filter((file) => file.type.startsWith('image/')).map((file) => URL.createObjectURL(file)))
   }
 
