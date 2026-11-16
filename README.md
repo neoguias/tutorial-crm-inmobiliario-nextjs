@@ -24,7 +24,7 @@ Los tests usan su propia base de datos SQLite, `test.db`, que se crea de cero en
 npm test
 ```
 
-Requiere Node 20.9 o superior.
+Requiere Node 22 o superior.
 
 ## Dónde está cada cosa
 
