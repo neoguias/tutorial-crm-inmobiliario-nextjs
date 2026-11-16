@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { OPERATIONS, PROPERTY_STATUSES, PROPERTY_TYPES, ZONES } from './crm'
+import { PHOTO_TYPES } from './photos'
 
 const keys = <T extends Record<string, string>>(labels: T) => Object.keys(labels) as [keyof T & string, ...(keyof T & string)[]]
 
@@ -39,6 +40,20 @@ export const visitSchema = z.object({
     .date({ error: 'Rellena la fecha de la visita.' })
     .refine((date) => date > new Date(), 'La fecha de la visita tiene que ser posterior a ahora.'),
 })
+
+// Un campo de archivos sin nada elegido llega como un archivo vacío: lo quitamos antes de validar.
+export const photosSchema = z.preprocess(
+  (files) => (files as unknown[]).filter((file) => file instanceof File && file.size > 0),
+  z
+    .array(
+      z
+        .file()
+        .mime(Object.keys(PHOTO_TYPES), { error: 'Las fotos tienen que ser JPG, PNG o WebP.' })
+        .max(5 * 1024 * 1024, { error: 'Cada foto puede ocupar como máximo 5 MB.' }),
+    )
+    .min(1, 'Elige al menos una foto.')
+    .max(6, 'Sube como máximo 6 fotos a la vez.'),
+)
 
 export type FieldErrors = Record<string, string[] | undefined>
 

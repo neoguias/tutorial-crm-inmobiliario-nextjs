@@ -1,11 +1,15 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import Image from 'next/image'
 import { Suspense } from 'react'
 import { connection } from 'next/server'
 import { db } from '@/lib/db'
 import { OPERATIONS, PROPERTY_TYPES, VISIT_OUTCOMES, dayLabel, euroLabel, label, priceLabel, timeLabel } from '@/lib/crm'
 import { demandsMatching } from '@/lib/matching'
+import { photoUrl } from '@/lib/photos'
+import { DeletePhotoButton } from './delete-photo-button'
+import { PhotoUploader } from './photo-uploader'
 import { StatusForm } from './status-form'
 import { VisitPlanner } from './visit-planner'
 
@@ -18,8 +22,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 }
 
 /**
- * La ficha de un inmueble: sus datos, los clientes cuya demanda encaja con él y las visitas,
- * con un formulario para programar la siguiente.
+ * La ficha de un inmueble: sus datos y sus fotos, los clientes cuya demanda encaja con él y
+ * las visitas, con un formulario para programar la siguiente.
  */
 export default function PropertyPage({ params }: { params: Params }) {
   return (
@@ -34,7 +38,10 @@ async function PropertyDetails({ params }: { params: Params }) {
 
   const property = await db.property.findUnique({
     where: { id: Number((await params).id) },
-    include: { visits: { include: { contact: true }, orderBy: { scheduledAt: 'asc' } } },
+    include: {
+      photos: { orderBy: { position: 'asc' } },
+      visits: { include: { contact: true }, orderBy: { scheduledAt: 'asc' } },
+    },
   })
 
   if (!property) notFound()
@@ -53,6 +60,19 @@ async function PropertyDetails({ params }: { params: Params }) {
         {label(PROPERTY_TYPES, property.type)} en {property.zone} · {property.bedrooms > 0 && `${property.bedrooms} dorm. · `}
         {property.area} m² · <strong>{priceLabel(property)}</strong>
       </p>
+
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:max-w-[66%]">
+        {property.photos.map((photo, i) => (
+          <figure key={photo.id} className="group relative">
+            <Image src={photoUrl(photo.path)} alt={property.title} width={480} height={320} className="aspect-[3/2] w-full rounded-lg object-cover" />
+            {i === 0 && <span className="absolute left-2 top-2 rounded bg-white/90 px-2 py-0.5 text-xs font-medium">Portada</span>}
+            <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 has-[form]:opacity-100">
+              <DeletePhotoButton photoId={photo.id} />
+            </div>
+          </figure>
+        ))}
+      </div>
+      <PhotoUploader propertyId={property.id} />
 
       <StatusForm propertyId={property.id} status={property.status} />
 

@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { connection } from 'next/server'
 import { db } from '@/lib/db'
 import { PROPERTY_STATUSES, PROPERTY_TYPES, label, priceLabel } from '@/lib/crm'
 import { demandsMatching } from '@/lib/matching'
+import { photoUrl } from '@/lib/photos'
 import { Filters } from './filters'
 import { NewPropertyForm } from './new-property-form'
 
@@ -40,6 +42,8 @@ async function PropertyTable({ searchParams }: { searchParams: Search }) {
 
   const properties = await db.property.findMany({
     where: { ...(operation ? { operation } : {}), ...(zone ? { zone } : {}) },
+    // La portada es la primera foto de cada inmueble.
+    include: { photos: { orderBy: { position: 'asc' }, take: 1 } },
     orderBy: { reference: 'asc' },
   })
 
@@ -65,11 +69,20 @@ async function PropertyTable({ searchParams }: { searchParams: Search }) {
             <tr key={property.id} className="border-t border-slate-100">
               <td className="px-4 py-3 font-mono text-xs">{property.reference}</td>
               <td className="px-4 py-3">
-                <Link href={`/inmuebles/${property.id}`} className="font-medium text-teal-700 hover:underline">
-                  {property.title}
-                </Link>
-                <div className="text-xs text-slate-500">
-                  {label(PROPERTY_TYPES, property.type)} · {property.bedrooms > 0 && `${property.bedrooms} dorm. · `}{property.area} m²
+                <div className="flex items-center gap-3">
+                  {property.photos[0] ? (
+                    <Image src={photoUrl(property.photos[0].path)} alt="" width={72} height={48} className="h-12 w-18 rounded object-cover" />
+                  ) : (
+                    <div className="h-12 w-18 rounded bg-slate-100" />
+                  )}
+                  <div>
+                    <Link href={`/inmuebles/${property.id}`} className="font-medium text-teal-700 hover:underline">
+                      {property.title}
+                    </Link>
+                    <div className="text-xs text-slate-500">
+                      {label(PROPERTY_TYPES, property.type)} · {property.bedrooms > 0 && `${property.bedrooms} dorm. · `}{property.area} m²
+                    </div>
+                  </div>
                 </div>
               </td>
               <td className="px-4 py-3">{property.zone}</td>

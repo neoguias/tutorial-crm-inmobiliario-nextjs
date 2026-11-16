@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/lib/db'
 import { priceLabel } from '@/lib/crm'
 import { demandsMatching, propertiesMatching } from '@/lib/matching'
-import { fieldErrors, propertySchema, visitSchema } from '@/lib/validation'
+import { fieldErrors, photosSchema, propertySchema, visitSchema } from '@/lib/validation'
 
 function property(data: Partial<Parameters<typeof db.property.create>[0]['data']> = {}) {
   return db.property.create({
@@ -73,6 +73,22 @@ describe('los formularios', () => {
   it('no dejan programar una visita en el pasado', () => {
     expect(visitSchema.safeParse({ contactId: '1', scheduledAt: '2020-01-10T10:00' }).success).toBe(false)
     expect(visitSchema.safeParse({ contactId: '1', scheduledAt: '2099-01-10T10:00' }).success).toBe(true)
+  })
+})
+
+describe('las fotos', () => {
+  const file = (name: string, type: string, bytes = 10) => new File([new Uint8Array(bytes)], name, { type })
+
+  it('aceptan imágenes JPG, PNG y WebP', () => {
+    expect(photosSchema.safeParse([file('salon.jpg', 'image/jpeg'), file('cocina.webp', 'image/webp')]).success).toBe(true)
+  })
+
+  it('rechazan otros archivos, las de más de 5 MB y un envío sin fotos', () => {
+    const message = (files: File[]) => photosSchema.safeParse(files).error?.issues[0].message
+
+    expect(message([file('contrato.pdf', 'application/pdf')])).toBe('Las fotos tienen que ser JPG, PNG o WebP.')
+    expect(message([file('enorme.jpg', 'image/jpeg', 6 * 1024 * 1024)])).toBe('Cada foto puede ocupar como máximo 5 MB.')
+    expect(message([file('', 'application/octet-stream', 0)])).toBe('Elige al menos una foto.')
   })
 })
 

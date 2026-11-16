@@ -4,7 +4,8 @@ import { refresh } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
 import { VISIT_OUTCOMES } from '@/lib/crm'
-import { contactSchema, fieldErrors, propertySchema, statusSchema, visitSchema, type FieldErrors } from '@/lib/validation'
+import { deletePhotoFile, savePhoto } from '@/lib/photos'
+import { contactSchema, fieldErrors, photosSchema, propertySchema, statusSchema, visitSchema, type FieldErrors } from '@/lib/validation'
 
 // Los valores vuelven con los errores: React vacía el formulario al terminar la acción y así
 // el usuario no tiene que volver a escribirlo todo.
@@ -71,6 +72,33 @@ export async function markVisit(visitId: number, outcome: keyof typeof VISIT_OUT
   }
 
   await db.visit.update({ where: { id: visitId }, data: { outcome } })
+
+  refresh()
+}
+
+export async function addPhotos(propertyId: number, _state: FormState, formData: FormData): Promise<FormState> {
+  const parsed = photosSchema.safeParse(formData.getAll('photos'))
+  if (!parsed.success) {
+    return { errors: { photos: [parsed.error.issues[0].message] } }
+  }
+
+  // Las fotos nuevas van detrás de las que ya tiene el inmueble.
+  const last = await db.propertyPhoto.aggregate({ where: { propertyId }, _max: { position: true } })
+  let position = last._max.position ?? 0
+
+  for (const file of parsed.data) {
+    const path = await savePhoto(propertyId, file)
+    await db.propertyPhoto.create({ data: { propertyId, path, position: ++position } })
+  }
+
+  refresh()
+
+  return { errors: {} }
+}
+
+export async function deletePhoto(photoId: number) {
+  const photo = await db.propertyPhoto.delete({ where: { id: photoId } })
+  await deletePhotoFile(photo.path)
 
   refresh()
 }

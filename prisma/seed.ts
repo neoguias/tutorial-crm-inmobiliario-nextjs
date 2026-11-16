@@ -1,5 +1,7 @@
 import 'dotenv/config'
+import { readFile } from 'node:fs/promises'
 import { db } from '../lib/db'
+import { deleteAllPhotos, savePhoto } from '../lib/photos'
 
 /**
  * Datos de ejemplo de Atalaya Inmobiliaria: una cartera pequeña de inmuebles, unos cuantos
@@ -10,6 +12,7 @@ async function main() {
   await db.demand.deleteMany()
   await db.contact.deleteMany()
   await db.property.deleteMany()
+  await deleteAllPhotos()
 
   const properties: [string, string, string, string, string, number, number, number][] = [
     ['AT-101', 'Piso luminoso junto al mercado', 'sale', 'flat', 'Ruzafa', 289000, 3, 92],
@@ -25,7 +28,11 @@ async function main() {
   ]
 
   for (const [reference, title, operation, type, zone, price, bedrooms, area] of properties) {
-    await db.property.create({ data: { reference, title, operation, type, zone, price, bedrooms, area } })
+    const property = await db.property.create({ data: { reference, title, operation, type, zone, price, bedrooms, area } })
+
+    // Cada inmueble de ejemplo tiene su foto en prisma/photos.
+    const photo = new File([await readFile(`prisma/photos/${reference}.jpg`)], `${reference}.jpg`, { type: 'image/jpeg' })
+    await db.propertyPhoto.create({ data: { propertyId: property.id, path: await savePhoto(property.id, photo) } })
   }
 
   const lucia = await db.contact.create({

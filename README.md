@@ -1,6 +1,6 @@
 # CRM inmobiliario con Next.js
 
-El CRM de Atalaya Inmobiliaria, una agencia inventada de Valencia: la cartera de inmuebles, los clientes con lo que busca cada uno, el cruce automático entre las dos cosas y la agenda de visitas. Al dar de alta un piso ves qué clientes lo están buscando, y al dar de alta un cliente ves qué inmuebles le encajan.
+El CRM de Atalaya Inmobiliaria, una agencia inventada de Valencia, con la cartera de inmuebles y sus fotos, los clientes con lo que busca cada uno, el cruce automático entre las dos cosas y la agenda de visitas. Al dar de alta un piso ves qué clientes lo están buscando, y al dar de alta un cliente ves qué inmuebles le encajan.
 
 Está hecho con Next.js 16 (App Router, Server Components y Server Actions), Prisma 7 sobre SQLite, Zod para validar los formularios y Tailwind para los estilos.
 
@@ -16,7 +16,7 @@ npx prisma db seed
 npm run dev
 ```
 
-Abre `http://localhost:3000`. El seed carga diez inmuebles, cinco clientes con lo que buscan y dos visitas, así que el cruce ya tiene algo que enseñar desde el principio.
+Abre `http://localhost:3000`. El seed carga diez inmuebles con una foto cada uno, cinco clientes con lo que buscan y dos visitas, así que el cruce ya tiene algo que enseñar desde el principio. Las fotos de ejemplo están generadas con IA y son de uso libre.
 
 Los tests usan su propia base de datos SQLite, `test.db`, que se crea de cero en cada ejecución:
 
@@ -33,8 +33,9 @@ Requiere Node 22 o superior.
 - [`lib/crm.ts`](lib/crm.ts): la agencia, sus zonas, los textos en español de cada valor y el formato de precios y fechas.
 - [`lib/validation.ts`](lib/validation.ts): los esquemas de Zod de los formularios.
 - [`app/actions.ts`](app/actions.ts): las Server Actions que guardan inmuebles, clientes, visitas y estados.
+- [`lib/photos.ts`](lib/photos.ts) y [`app/fotos`](app/fotos): las fotos se guardan en `storage/photos` y las sirve un Route Handler, porque Next.js no sirve lo que se añade a `public` después de compilar.
 - [`app/inmuebles`](app/inmuebles), [`app/clientes`](app/clientes) y [`app/visitas`](app/visitas): las cuatro pantallas del CRM.
-- [`tests/crm.test.ts`](tests/crm.test.ts): el cruce, los formularios y el formato de los precios.
+- [`tests/crm.test.ts`](tests/crm.test.ts): el cruce, los formularios, las fotos y el formato de los precios.
 
 ## Autor
 

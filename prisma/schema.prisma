@@ -19,11 +19,25 @@ model Property {
   area        Int
   status      String   @default("available")
   description String?
+  photos      PropertyPhoto[]
   visits      Visit[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([operation, status])
+}
+
+// Las fotos de cada inmueble. El archivo vive en storage/photos y aquí solo se guarda su
+// ruta. La foto con la posición más baja es la portada.
+model PropertyPhoto {
+  id         Int      @id @default(autoincrement())
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId Int
+  path       String
+  position   Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([propertyId, position])
 }
 
 model Contact {

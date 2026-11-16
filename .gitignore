@@ -47,3 +47,6 @@ next-env.d.ts
 # base de datos SQLite local
 *.db
 *.db-journal
+
+# fotos subidas desde el CRM
+/storage
