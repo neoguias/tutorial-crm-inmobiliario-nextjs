@@ -36,6 +36,10 @@ Requiere Node 22 o superior.
 - [`app/inmuebles`](app/inmuebles), [`app/clientes`](app/clientes) y [`app/visitas`](app/visitas): las cuatro pantallas del CRM.
 - [`tests/crm.test.ts`](tests/crm.test.ts): el cruce, los formularios y el formato de los precios.
 
+## Autor
+
+Creado por [Edu Lázaro](https://edulazaro.com) para [Neoguias](https://www.neoguias.com).
+
 ## Licencia
 
-MIT.
+Este ejemplo es software libre con [licencia MIT](LICENSE).
